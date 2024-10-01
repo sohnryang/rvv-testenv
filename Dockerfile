@@ -1,5 +1,4 @@
-FROM ubuntu:24.04 AS build
-
+FROM ubuntu:24.04 AS base
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
   autoconf \
@@ -36,6 +35,8 @@ RUN apt-get update && \
   wget && \
   rm -rf /var/lib/apt/lists/*
 
+FROM base AS builder
+
 WORKDIR /tools
 RUN git clone https://github.com/riscv-software-src/riscv-isa-sim
 WORKDIR ./riscv-isa-sim/build
@@ -62,5 +63,5 @@ RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLLVM_USE_LINKER=l
 WORKDIR ./build
 RUN ninja && ninja install && ninja clean
 
-FROM ubuntu:24.04
+FROM base
 COPY --from=build /opt/riscv /opt/riscv
