@@ -43,9 +43,15 @@ RUN ../configure --prefix=/opt/riscv
 RUN make -j `nproc` && make install && make clean
 
 WORKDIR /tools
+RUN wget https://ftp.kaist.ac.kr/gnu/glibc/glibc-2.40.tar.bz2
+RUN tar xf glibc-2.40.tar.bz2
+RUN wget https://ftp.kaist.ac.kr/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz
+RUN tar xf gcc-14.2.0.tar.xz
+RUN wget https://ftp.kaist.ac.kr/gnu/binutils/binutils-2.43.tar.xz
+RUN tar xf binutils-2.43.tar.xz
 RUN git clone https://github.com/riscv-collab/riscv-gnu-toolchain
 WORKDIR ./riscv-gnu-toolchain
-RUN ./configure --prefix=/opt/riscv
+RUN ./configure --prefix=/opt/riscv --disable-gdb --with-glibc-src=/tools/glibc-2.40 --with-gcc-src=/tools/gcc-14.2.0 --with-binutils-src=/tools/binutils-2.43
 RUN make -j `nproc` linux && make install && make clean
 
 WORKDIR /tools
