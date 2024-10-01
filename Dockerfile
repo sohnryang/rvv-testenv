@@ -2,6 +2,28 @@ FROM ubuntu:24.04
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
+  autoconf \
+  automake \
+  autotools-dev \
+  curl \
+  python3 \
+  python3-pip \
+  libmpc-dev \
+  libmpfr-dev \
+  libgmp-dev \
+  gawk \
+  build-essential \
+  bison \
+  flex \
+  texinfo \
+  gperf \
+  libtool \
+  patchutils \
+  bc \
+  zlib1g-dev \
+  libexpat-dev \
+  libglib2.0-dev \
+  libslirp-dev \
   ca-certificates \
   build-essential \
   git \
@@ -9,7 +31,6 @@ RUN apt-get update && \
   libboost-regex-dev \
   libboost-system-dev \
   cmake \
-  python-is-python3 \
   ninja-build \
   lld \
   wget && \
@@ -18,8 +39,14 @@ RUN apt-get update && \
 WORKDIR /tools
 RUN git clone https://github.com/riscv-software-src/riscv-isa-sim
 WORKDIR ./riscv-isa-sim/build
-RUN ../configure
+RUN ../configure --prefix=/opt/riscv
 RUN make -j `nproc` && make install && make clean
+
+WORKDIR /tools
+RUN git clone https://github.com/riscv-collab/riscv-gnu-toolchain
+WORKDIR ./riscv-gnu-toolchain
+RUN ./configure --prefix=/opt/riscv
+RUN make -j `nproc` linux && make install && make clean
 
 WORKDIR /tools
 RUN wget https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.0/llvm-project-19.1.0.src.tar.xz
