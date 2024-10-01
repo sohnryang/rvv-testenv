@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:24.04 AS build
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
@@ -61,4 +61,6 @@ WORKDIR ./llvm-project-19.1.0.src
 RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLLVM_USE_LINKER=lld -DLLVM_ENABLE_PROJECTS=clang -DLLVM_TARGETS_TO_BUILD=RISCV -DCMAKE_INSTALL_PREFIX=/llvm
 WORKDIR ./build
 RUN ninja && ninja install && ninja clean
-WORKDIR /
+
+FROM ubuntu:24.04
+COPY --from=build /opt/riscv /opt/riscv
