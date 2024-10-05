@@ -35,7 +35,7 @@ RUN apt-get update && \
   wget && \
   rm -rf /var/lib/apt/lists/*
 
-FROM base AS builder
+FROM base AS build
 
 WORKDIR /tools
 RUN git clone https://github.com/riscv-software-src/riscv-isa-sim
@@ -53,13 +53,13 @@ RUN tar xf binutils-2.43.tar.xz
 RUN git clone https://github.com/riscv-collab/riscv-gnu-toolchain
 WORKDIR ./riscv-gnu-toolchain
 RUN ./configure --prefix=/opt/riscv --disable-gdb --with-glibc-src=/tools/glibc-2.40 --with-gcc-src=/tools/gcc-14.2.0 --with-binutils-src=/tools/binutils-2.43
-RUN make -j `nproc` linux && make install && make clean
+RUN make -j `nproc` linux && make -j `nproc` build-sim && make install && make clean
 
 WORKDIR /tools
-RUN wget https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.0/llvm-project-19.1.0.src.tar.xz
-RUN tar xvf llvm-project-19.1.0.src.tar.xz
-WORKDIR ./llvm-project-19.1.0.src
-RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DLLVM_USE_LINKER=lld -DLLVM_ENABLE_PROJECTS=clang -DLLVM_TARGETS_TO_BUILD=RISCV -DCMAKE_INSTALL_PREFIX=/llvm
+RUN git clone https://github.com/llvm/llvm-project
+WORKDIR ./llvm-project
+RUN git checkout llvmorg-19.1.1
+RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DLLVM_USE_LINKER=lld -DLLVM_ENABLE_PROJECTS=clang -DLLVM_TARGETS_TO_BUILD=RISCV -DCMAKE_INSTALL_PREFIX=/opt/riscv -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-linux-gnu
 WORKDIR ./build
 RUN ninja && ninja install && ninja clean
 
