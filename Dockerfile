@@ -52,7 +52,7 @@ RUN wget https://ftp.kaist.ac.kr/gnu/binutils/binutils-2.43.tar.xz
 RUN tar xf binutils-2.43.tar.xz
 RUN git clone https://github.com/riscv-collab/riscv-gnu-toolchain
 WORKDIR ./riscv-gnu-toolchain
-RUN ./configure --prefix=/opt/riscv --disable-gdb --with-glibc-src=/tools/glibc-2.40 --with-gcc-src=/tools/gcc-14.2.0 --with-binutils-src=/tools/binutils-2.43
+RUN ./configure --prefix=/opt/riscv --disable-gdb --with-glibc-src=/tools/glibc-2.40 --with-gcc-src=/tools/gcc-14.2.0 --with-binutils-src=/tools/binutils-2.43 --with-arch=rv64gcv
 RUN make -j `nproc` linux && make -j `nproc` build-sim && make install && make clean
 
 WORKDIR /tools
