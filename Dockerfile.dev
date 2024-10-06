@@ -13,6 +13,7 @@ RUN apt-get update && \
   pipx \
   python3-venv \
   stow \
+  less \
   helix && \
   rm -rf /var/lib/apt/lists/*
 
