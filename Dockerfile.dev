@@ -33,4 +33,7 @@ RUN stow helix
 RUN stow bat
 
 ENV TERM=xterm-color
+ENV PATH="/opt/riscv/bin:$PATH"
+ENV EDITOR=hx
+ENV VISUAL=hx
 WORKDIR /root
