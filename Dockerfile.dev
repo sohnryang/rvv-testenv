@@ -6,8 +6,6 @@ RUN apt-get update && \
   add-apt-repository ppa:maveonair/helix-editor && \
   apt-get update && \
   apt-get install -y \
-  clangd \
-  clang-format \
   python-is-python3 \
   python3-pip \
   pipx \
