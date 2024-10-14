@@ -61,7 +61,7 @@ RUN make -j `nproc` linux && make -j `nproc` build-sim && make install && make c
 WORKDIR /tools
 RUN git clone --branch llvmorg-19.1.1 --depth 1 https://github.com/llvm/llvm-project
 WORKDIR ./llvm-project
-RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DLLVM_USE_LINKER=lld -DLLVM_ENABLE_PROJECTS=clang -DLLVM_TARGETS_TO_BUILD=RISCV -DCMAKE_INSTALL_PREFIX=/opt/riscv -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-linux-gnu
+RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DLLVM_USE_LINKER=lld -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;polly" -DLLVM_TARGETS_TO_BUILD="RISCV;X86" -DCMAKE_INSTALL_PREFIX=/opt/riscv -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-linux-gnu
 WORKDIR ./build
 RUN ninja && ninja install && ninja clean
 
