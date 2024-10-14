@@ -59,9 +59,8 @@ RUN ./configure --prefix=/opt/riscv --with-gdb-src=/tools/gdb-15.1 --with-glibc-
 RUN make -j `nproc` linux && make -j `nproc` build-sim && make install && make clean
 
 WORKDIR /tools
-RUN git clone https://github.com/llvm/llvm-project
+RUN git clone --branch llvmorg-19.1.1 --depth 1 https://github.com/llvm/llvm-project
 WORKDIR ./llvm-project
-RUN git checkout llvmorg-19.1.1
 RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DLLVM_USE_LINKER=lld -DLLVM_ENABLE_PROJECTS=clang -DLLVM_TARGETS_TO_BUILD=RISCV -DCMAKE_INSTALL_PREFIX=/opt/riscv -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-linux-gnu
 WORKDIR ./build
 RUN ninja && ninja install && ninja clean
