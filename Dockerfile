@@ -32,7 +32,8 @@ RUN apt-get update && \
   cmake \
   ninja-build \
   lld \
-  wget && \
+  wget \
+  libncurses-dev && \
   rm -rf /var/lib/apt/lists/*
 
 FROM base AS build
