@@ -14,6 +14,7 @@ RUN apt-get update && \
   less \
   helix && \
   rm -rf /var/lib/apt/lists/*
+RUN pipx install poetry pyright black isort ipython compiledb
 
 RUN curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_0.44.1_Linux_x86_64.tar.gz"
 RUN tar xf lazygit.tar.gz lazygit
@@ -23,6 +24,14 @@ RUN rm lazygit*
 RUN wget https://github.com/sharkdp/bat/releases/download/v0.24.0/bat_0.24.0_amd64.deb
 RUN dpkg -i bat_0.24.0_amd64.deb
 RUN rm bat_0.24.0_amd64.deb
+
+RUN git clone --branch v1.9.0 --depth 1 https://github.com/google/benchmark
+WORKDIR ./benchmark
+RUN mkdir build
+COPY riscv-toolchain.txt .
+WORKDIR ./build
+RUN cmake -DCMAKE_TOOLCHAIN_FILE=../riscv-toolchain.txt -DCMAKE_INSTALL_PREFIX=/opt/riscv -DBENCHMARK_DOWNLOAD_DEPENDENCIES=ON -DCMAKE_BUILD_TYPE=Release -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -G Ninja ..
+RUN ninja && ninja install && ninja clean
 
 WORKDIR /root
 RUN git clone https://github.com/sohnryang/dotfiles
@@ -35,3 +44,4 @@ ENV PATH="/opt/riscv/bin:$PATH"
 ENV EDITOR=hx
 ENV VISUAL=hx
 WORKDIR /root
+RUN echo 'export PATH="$HOME/.local/bin:$PATH"' >> /root/.bashrc
