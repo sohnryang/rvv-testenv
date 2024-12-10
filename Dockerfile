@@ -39,12 +39,6 @@ RUN apt-get update && \
 FROM base AS build
 
 WORKDIR /tools
-RUN git clone https://github.com/riscv-software-src/riscv-isa-sim
-WORKDIR ./riscv-isa-sim/build
-RUN ../configure --prefix=/opt/riscv
-RUN make -j `nproc` && make install && make clean
-
-WORKDIR /tools
 RUN wget https://ftp.kaist.ac.kr/gnu/glibc/glibc-2.40.tar.bz2
 RUN tar xf glibc-2.40.tar.bz2
 RUN wget https://ftp.kaist.ac.kr/gnu/gcc/gcc-14.2.0/gcc-14.2.0.tar.xz
@@ -55,15 +49,15 @@ RUN wget https://ftp.kaist.ac.kr/gnu/gdb/gdb-15.1.tar.xz
 RUN tar xf gdb-15.1.tar.xz
 RUN git clone https://github.com/riscv-collab/riscv-gnu-toolchain
 WORKDIR ./riscv-gnu-toolchain
-RUN ./configure --prefix=/opt/riscv --with-gdb-src=/tools/gdb-15.1 --with-glibc-src=/tools/glibc-2.40 --with-gcc-src=/tools/gcc-14.2.0 --with-binutils-src=/tools/binutils-2.43 --with-arch=rv64gcv
+RUN ./configure --prefix=/usr/local --with-gdb-src=/tools/gdb-15.1 --with-glibc-src=/tools/glibc-2.40 --with-gcc-src=/tools/gcc-14.2.0 --with-binutils-src=/tools/binutils-2.43 --with-arch=rv64gcv
 RUN make -j `nproc` linux && make -j `nproc` build-sim && make install && make clean
 
 WORKDIR /tools
 RUN git clone --branch llvmorg-19.1.1 --depth 1 https://github.com/llvm/llvm-project
 WORKDIR ./llvm-project
-RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DLLVM_USE_LINKER=lld -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;polly" -DLLVM_TARGETS_TO_BUILD="RISCV;X86" -DCMAKE_INSTALL_PREFIX=/opt/riscv -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-linux-gnu
+RUN cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DLLVM_USE_LINKER=lld -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;polly" -DCMAKE_INSTALL_PREFIX=/usr/local -DLLVM_DEFAULT_TARGET_TRIPLE=riscv64-unknown-linux-gnu
 WORKDIR ./build
 RUN ninja && ninja install && ninja clean
 
 FROM base
-COPY --from=build /opt/riscv /opt/riscv
+COPY --from=build /usr/local /usr/local

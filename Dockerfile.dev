@@ -1,7 +1,7 @@
 FROM rvv-testenv
 
 RUN apt-get update && \
-  apt-get install -y software-properties-common && \
+  apt-get install -y software-properties-common gpg-agent && \
   rm -rf /var/lib/apt/lists/* && \
   add-apt-repository ppa:maveonair/helix-editor && \
   apt-get update && \
@@ -12,25 +12,34 @@ RUN apt-get update && \
   python3-venv \
   stow \
   less \
+  openssh-server \
   helix && \
   rm -rf /var/lib/apt/lists/*
 RUN pipx install poetry pyright black isort ipython compiledb
 
-RUN curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_0.44.1_Linux_x86_64.tar.gz"
+COPY sshd_config /etc/ssh/
+RUN echo "root:rvv" | chpasswd
+
+RUN curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_0.44.1_Linux_$(uname -m).tar.gz"
 RUN tar xf lazygit.tar.gz lazygit
 RUN install lazygit /usr/local/bin
 RUN rm lazygit*
 
-RUN wget https://github.com/sharkdp/bat/releases/download/v0.24.0/bat_0.24.0_amd64.deb
-RUN dpkg -i bat_0.24.0_amd64.deb
-RUN rm bat_0.24.0_amd64.deb
+RUN curl -Lo bat.deb "https://github.com/sharkdp/bat/releases/download/v0.24.0/bat_0.24.0_$(uname -m | sed -e 's/aarch/arm/g;s/x86_/amd/g').deb"
+RUN dpkg -i bat.deb
+RUN rm bat.deb
+
+COPY riscv64-unknown-linux-gnu.cfg /usr/local/bin/
+RUN ln -s /usr/local/lib/gcc/riscv64-unknown-linux-gnu/14.2.0/crtbegin*.o /usr/local/sysroot/usr/lib/
+RUN ln -s /usr/local/lib/gcc/riscv64-unknown-linux-gnu/14.2.0/crtend*.o /usr/local/sysroot/usr/lib/
+RUN ln -s /usr/local/lib/gcc/riscv64-unknown-linux-gnu/14.2.0/*.a /usr/local/sysroot/usr/lib/
 
 RUN git clone --branch v1.9.0 --depth 1 https://github.com/google/benchmark
 WORKDIR ./benchmark
 RUN mkdir build
 COPY riscv-toolchain.txt .
 WORKDIR ./build
-RUN cmake -DCMAKE_TOOLCHAIN_FILE=../riscv-toolchain.txt -DCMAKE_INSTALL_PREFIX=/opt/riscv -DBENCHMARK_DOWNLOAD_DEPENDENCIES=ON -DCMAKE_BUILD_TYPE=Release -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -G Ninja ..
+RUN cmake -DCMAKE_TOOLCHAIN_FILE=../riscv-toolchain.txt -DCMAKE_INSTALL_PREFIX=/usr/local -DBENCHMARK_DOWNLOAD_DEPENDENCIES=ON -DCMAKE_BUILD_TYPE=Release -DBENCHMARK_ENABLE_GTEST_TESTS=OFF -G Ninja ..
 RUN ninja && ninja install && ninja clean
 
 WORKDIR /root
@@ -40,8 +49,10 @@ RUN stow helix
 RUN stow bat
 
 ENV TERM=xterm-color
-ENV PATH="/opt/riscv/bin:$PATH"
 ENV EDITOR=hx
 ENV VISUAL=hx
 WORKDIR /root
 RUN echo 'export PATH="$HOME/.local/bin:$PATH"' >> /root/.bashrc
+
+EXPOSE 22
+ENTRYPOINT service ssh start && bash
