@@ -20,7 +20,7 @@ RUN pipx install poetry pyright black isort ipython compiledb
 COPY sshd_config /etc/ssh/
 RUN echo "root:rvv" | chpasswd
 
-RUN curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_0.44.1_Linux_$(uname -m).tar.gz"
+RUN curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_0.44.1_Linux_$(uname -m | sed -e 's/aarch/arm/g').tar.gz"
 RUN tar xf lazygit.tar.gz lazygit
 RUN install lazygit /usr/local/bin
 RUN rm lazygit*
